@@ -1,0 +1,22 @@
+/* Импорт базовых стилей Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Глобальные стили */
+html, body {
+  padding: 0;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #f9fafb; /* светлый фон для всего приложения */
+  color: #111827; /* стандартный цвет текста */
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+* {
+  box-sizing: border-box;
+}
