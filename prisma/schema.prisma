@@ -1,0 +1,56 @@
+// Подключение к базе (PostgreSQL в примере)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  
+}
+
+model Dealer {
+  id        String   @id @default(uuid())
+  name      String
+  country   String?
+  isActive  Boolean @default(true)
+
+  leads     Lead[]  @relation("DealerLeads")
+}
+
+model Manager {
+  id        String   @id @default(uuid())
+  name      String
+  country   String?
+  isActive  Boolean  @default(true)
+  workload  Int      @default(0)
+
+  leads     Lead[]   @relation("ManagerLeads")
+}
+
+
+model Lead {
+  id                    String   @id @default(uuid())
+  name                  String?
+  email                 String?
+  phone                 String?
+  message               String?
+
+  detectedCountry       String?
+  detectedCountryReason String?
+
+  assignedToDealerId  String?
+  assignedToManagerId String?
+  assignmentStatus    String?    // assigned | pending | waitingInfo
+
+  createdAt           DateTime @default(now())
+}
+
+
+
+enum LeadStatus {
+  NEW
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+}
