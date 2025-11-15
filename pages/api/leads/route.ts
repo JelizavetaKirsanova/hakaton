@@ -1,40 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '../../../prisma/prisma';
 
-type Lead = {
-  id: string;
-  name: string;
-  phone: string;
-  email?: string;
-  product?: string;
-  status: string;
-};
-
-let leads: Lead[] = [
-  { id: '1', name: 'Иван', phone: '+79000000001', status: 'Новый' },
-];
-
-export async function GET(req: NextRequest) {
-  return NextResponse.json(leads); // Массив объектов JSON
+export async function GET() {
+  try {
+    const leads = await prisma.lead.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: { manager: true }, // подтягиваем данные менеджера
+    });
+    return NextResponse.json(leads);
+  } catch (error) {
+    console.error('Ошибка при получении лидов:', error);
+    return NextResponse.json({ error: 'Не удалось получить лиды' }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json(); // парсим тело
+    const body = await req.json();
+    console.log('Полученные данные:', body);
+
     if (!body.name || !body.phone) {
+      console.error('Ошибка: Имя и телефон обязательны');
       return NextResponse.json({ error: 'Имя и телефон обязательны' }, { status: 400 });
     }
 
-    const newLead: Lead = {
-      id: Date.now().toString(),
-      name: body.name,
-      phone: body.phone,
-      email: body.email,
-      product: body.product,
-      status: 'Новый',
-    };
-    leads.push(newLead);
-    return NextResponse.json(newLead); // Возвращаем новый объект JSON
-  } catch (err) {
-    return NextResponse.json({ error: 'Неверный JSON' }, { status: 400 });
+    const newLead = await prisma.lead.create({
+      data: {
+        name: body.name,
+        phone: body.phone,
+        email: body.email || null,
+        product: body.product || null,
+        region: body.region || null,
+        status: 'NEW',
+      },
+      include: { manager: true },
+    });
+
+    console.log('Лид успешно создан:', newLead);
+    return NextResponse.json(newLead, { status: 201 });
+  } catch (error) {
+    console.error('Ошибка при создании лида:', error);
+    return NextResponse.json({ error: 'Не удалось создать лид' }, { status: 500 });
   }
 }
